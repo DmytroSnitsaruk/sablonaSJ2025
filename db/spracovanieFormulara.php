@@ -30,7 +30,7 @@ $sql = "INSERT INTO udaje (meno, email, sprava)
 $statement = $conn->prepare($sql);
 try {
     $insert = $statement->execute();
-    header("Location: http://localhost/cvicnasablona/thankyou.php");
+    header("Location: http://localhost/sablonaSJ2025/thankyou.php");
     return $insert;
 } catch (\Exception $exception) {
     return false;
