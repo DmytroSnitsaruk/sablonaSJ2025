@@ -1,7 +1,7 @@
 <?php
 
 require_once('../classes/Kontakt.php');
-use formular\Kontakt;
+
 
 $meno = $_POST['meno'];
 $email = $_POST['email'];

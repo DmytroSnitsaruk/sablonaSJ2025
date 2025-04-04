@@ -1,30 +1,44 @@
 <?php
 namespace otazkyodpovede;
-
+//error_reporting(E_ALL); //zapnutie chybových hlásení
+//ini_set("display_errors","On");
 define('__ROOT__', dirname(dirname(__FILE__)));
-require_once(__ROOT__.'/db/config.php');
+require_once(__ROOT__.'/classes/Database.php');
+use Database;
 use PDO;
-class QnA{
-    private $conn;
+use Exception;
+class QnA extends Database{
+    protected $connection;
     public function __construct() {
         $this->connect();
+        //Použitie gettera na získanie spojenia
+        $this->connection = $this->getConnection();
     }
-    private function connect() {
-        $config = DATABASE;
-
-        $options = array(
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-        );
-        try {
-            $this->conn = new PDO('mysql:host=' . $config['HOST'] . ';dbname=' .
-                $config['DBNAME'] . ';port=' . $config['PORT'], $config['USER_NAME'],
-                $config['PASSWORD'], $options);
-        } catch (PDOException $e) {
-            die("Chyba pripojenia: " . $e->getMessage());
+    public function getQnA() {
+        // SQL SELECT príkaz
+        $sql = "SELECT * FROM qna";
+        $statement = $this->connection->prepare($sql);
+        $statement->execute();
+        // Získanie dát
+        $data = $statement->fetchAll(PDO::FETCH_ASSOC);
+        // Zobrazenie otázok a odpovedí
+        if ($data) {
+            echo '<section class="container">';
+            foreach ($data as $row) {
+                echo '<div class="accordion">
+                        <div class="question">' .
+                    $row["otazka"] . '
+                         </div>
+                        <div class="answer">' .
+                    $row["odpoved"] . '
+                        </div>
+                </div>';
+            }
+            echo '</section>';
+        } else {
+            echo "Neboli nájdené žiadne otázky a odpovede.";
         }
     }
-
     public function insertQnA(){
         try {
             // Načítanie JSON súboru
@@ -34,25 +48,25 @@ class QnA{
             $odpovede = $data["odpovede"];
 
             // Vloženie otázok a odpovedí v rámci transakcie
-            $this->conn->beginTransaction();
+            $this->connection->beginTransaction();
 
-            $sql = "INSERT INTO qna (otazka, odpoved) VALUES (:otazka, :odpoved)";
-            $statement = $this->conn->prepare($sql);
+            $sql = "INSERT IGNORE INTO qna (otazka, odpoved) VALUES (:otazka, :odpoved)";
+            $statement = $this->connection->prepare($sql);
 
             for ($i = 0; $i < count($otazky); $i++) {
                 $statement->bindParam(':otazka', $otazky[$i]);
                 $statement->bindParam(':odpoved', $odpovede[$i]);
                 $statement->execute();
             }
-            $this->conn->commit();
+            $this->connection->commit();
             echo "Dáta boli vložené";
         } catch (Exception $e) {
             // Zobrazenie chybového hlásenia
             echo "Chyba pri vkladaní dát do databázy: " . $e->getMessage();
-            $this->conn->rollback(); // Vrátenie späť zmien v prípade chyby
+            $this->connection->rollback(); // Vrátenie späť zmien v prípade chyby
         } finally {
-            // Uzatvorenie spojenia s databázou
-            $this->conn = null;
+            // Uzatvorenie spojenia
+            $this->connection = null;
         }
     }
 }
