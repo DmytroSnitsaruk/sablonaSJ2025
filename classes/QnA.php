@@ -51,7 +51,7 @@ class QnA{
             echo "Chyba pri vkladaní dát do databázy: " . $e->getMessage();
             $this->conn->rollback(); // Vrátenie späť zmien v prípade chyby
         } finally {
-            // Uzatvorenie spojenia
+            // Uzatvorenie spojenia s databázou
             $this->conn = null;
         }
     }
