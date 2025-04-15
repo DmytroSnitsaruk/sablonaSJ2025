@@ -1,39 +1,16 @@
 <?php 
 namespace otazkyodpovede;
+error_reporting(error_level:E_ALL);
+ini_set(option:"display_errors", value:"on");
 
-define('__ROOT__', dirname(dirname(__FILE__)));
-require_once('config.php');
+require('data.php');
 
 use PDO;
 use PDOException;
+use Database;
 
-class QnA {
-    public $conn;
-
-    public function __construct() {
-        $this->connect();
-    }
-
-    private function connect() {
-        $config = DATABASE;
-
-        $options = array(
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
-        );
-
-        try {
-            $this->conn = new PDO(
-                'mysql:host='.$config['HOST'].';dbname='.$config['DBNAME'].';port='.$config['PORT'],
-                $config['USER_NAME'],
-                $config['PASSWORD'],
-                $options
-            );
-        } catch (PDOException $e) {
-            die("Chyba pripojenia: " . $e->getMessage());
-        }
-    }
-
+class QnA extends Database {
+    
     public function readQnA() {
         try {
             
